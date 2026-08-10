@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "518858490478",
+    "project_id": "home-money-343bb",
+    "storage_bucket": "home-money-343bb.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:518858490478:android:b23dbb648fe9f1f5a81c7f",
+        "android_client_info": {
+          "package_name": "com.example.home_money"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBiVu4OtGSBJDnU1txlhRCVvmZ7Ra9LJQU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
