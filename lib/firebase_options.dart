@@ -56,7 +56,6 @@ class DefaultFirebaseOptions {
     projectId: 'home-money-343bb',
     storageBucket: 'home-money-343bb.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyAq_u3VE3SQ7QN2rbSDVehrLag7d_vzBbM',
     appId: '1:518858490478:ios:4c717d5dc7e1e29fa81c7f',

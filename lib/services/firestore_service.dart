@@ -1,78 +1,29 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../models/income_model.dart';
-import '../models/expense_model.dart';
 import '../models/budget_model.dart';
+import '../models/expense_model.dart';
+import '../models/family_member_model.dart';
+import '../models/income_model.dart';
+import '../models/saving_goal_model.dart';
+import '../models/user_model.dart';
 
 class FirestoreService {
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-
-  CollectionReference<Map<String, dynamic>> _userCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('profile');
-  }
-
-  CollectionReference<Map<String, dynamic>> incomesCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('incomes');
-  }
-
-  CollectionReference<Map<String, dynamic>> expensesCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('expenses');
-  }
-
-  CollectionReference<Map<String, dynamic>> budgetsCollection(String userId) {
-    return _firestore.collection('users').doc(userId).collection('budgets');
-  }
-
-  Future<void> addIncome(String userId, IncomeModel income) async {
-    await incomesCollection(userId).add(income.toMap());
-  }
-
-  Future<void> addExpense(String userId, ExpenseModel expense) async {
-    await expensesCollection(userId).add(expense.toMap());
-  }
-
-  Future<void> setBudget(String userId, BudgetModel budget) async {
-    final query = await budgetsCollection(
-      userId,
-    ).where('month', isEqualTo: budget.month).limit(1).get();
-    if (query.docs.isEmpty) {
-      await budgetsCollection(userId).add(budget.toMap());
-    } else {
-      await budgetsCollection(
-        userId,
-      ).doc(query.docs.first.id).set(budget.toMap());
-    }
-  }
-
-  Stream<List<IncomeModel>> incomesStream(String userId) {
-    return incomesCollection(userId)
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => IncomeModel.fromMap(doc.id, doc.data()))
-              .toList(),
-        );
-  }
-
-  Stream<List<ExpenseModel>> expensesStream(String userId) {
-    return expensesCollection(userId)
-        .orderBy('date', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => ExpenseModel.fromMap(doc.id, doc.data()))
-              .toList(),
-        );
-  }
-
-  Stream<List<BudgetModel>> budgetsStream(String userId) {
-    return budgetsCollection(userId)
-        .orderBy('createdAt', descending: true)
-        .snapshots()
-        .map(
-          (snapshot) => snapshot.docs
-              .map((doc) => BudgetModel.fromMap(doc.id, doc.data()))
-              .toList(),
-        );
-  }
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
+  DocumentReference<Map<String, dynamic>> userDoc(String id) => _db.collection('users').doc(id);
+  CollectionReference<Map<String, dynamic>> _items(String id, String name) => userDoc(id).collection(name);
+  Future<void> saveProfile(UserModel user) => userDoc(user.id).set(user.toMap(), SetOptions(merge: true));
+  Stream<UserModel?> profile(String id) => userDoc(id).snapshots().map((d) => d.exists ? UserModel.fromMap(d.id, d.data()!) : null);
+  Stream<List<T>> _stream<T>(String id, String kind, T Function(String, Map<String, dynamic>) mapper) => _items(id, kind).orderBy('createdAt', descending: true).snapshots().map((s) => s.docs.map((d) => mapper(d.id, d.data())).toList());
+  Future<void> addIncome(String id, IncomeModel value) => _items(id, 'incomes').add(value.toMap());
+  Future<void> addExpense(String id, ExpenseModel value) => _items(id, 'expenses').add(value.toMap());
+  Future<void> updateIncome(String id, IncomeModel value) => _items(id, 'incomes').doc(value.id).set(value.toMap());
+  Future<void> updateExpense(String id, ExpenseModel value) => _items(id, 'expenses').doc(value.id).set(value.toMap());
+  Future<void> delete(String id, String type, String itemId) => _items(id, type).doc(itemId).delete();
+  Stream<List<IncomeModel>> incomesStream(String id) => _stream(id, 'incomes', IncomeModel.fromMap);
+  Stream<List<ExpenseModel>> expensesStream(String id) => _stream(id, 'expenses', ExpenseModel.fromMap);
+  Stream<List<BudgetModel>> budgetsStream(String id) => _stream(id, 'budgets', BudgetModel.fromMap);
+  Stream<List<SavingGoalModel>> goalsStream(String id) => _stream(id, 'savingGoals', SavingGoalModel.fromMap);
+  Stream<List<FamilyMemberModel>> familyStream(String id) => _items(id, 'familyMembers').snapshots().map((s) => s.docs.map((d) => FamilyMemberModel.fromMap(d.id, d.data())).toList());
+  Future<void> setBudget(String id, BudgetModel value) => _items(id, 'budgets').doc(value.id.isEmpty ? null : value.id).set(value.toMap());
+  Future<void> saveGoal(String id, SavingGoalModel value) => _items(id, 'savingGoals').doc(value.id.isEmpty ? null : value.id).set(value.toMap());
+  Future<void> saveMember(String id, FamilyMemberModel value) => _items(id, 'familyMembers').doc(value.id.isEmpty ? null : value.id).set(value.toMap());
 }

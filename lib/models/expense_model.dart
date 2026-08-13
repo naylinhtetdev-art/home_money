@@ -6,6 +6,7 @@ class ExpenseModel {
   final String category;
   final DateTime date;
   final String note;
+  final String paymentMethod;
   final DateTime createdAt;
 
   ExpenseModel({
@@ -14,6 +15,7 @@ class ExpenseModel {
     required this.category,
     required this.date,
     required this.note,
+    this.paymentMethod = 'Cash',
     required this.createdAt,
   });
 
@@ -24,6 +26,7 @@ class ExpenseModel {
       category: data['category'] as String? ?? 'Other',
       date: (data['date'] as Timestamp?)?.toDate() ?? DateTime.now(),
       note: data['note'] as String? ?? '',
+      paymentMethod: data['paymentMethod'] as String? ?? 'Cash',
       createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
     );
   }
@@ -34,6 +37,7 @@ class ExpenseModel {
       'category': category,
       'date': Timestamp.fromDate(date),
       'note': note,
+      'paymentMethod': paymentMethod,
       'createdAt': Timestamp.fromDate(createdAt),
     };
   }

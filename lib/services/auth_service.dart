@@ -34,4 +34,6 @@ class AuthService {
   Future<void> sendPasswordResetEmail(String email) async {
     await _auth.sendPasswordResetEmail(email: email);
   }
+  Future<void> changePassword(String value) => _auth.currentUser!.updatePassword(value);
+  Future<void> deleteAccount() => _auth.currentUser!.delete();
 }
