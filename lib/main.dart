@@ -1,7 +1,9 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
+import 'package:home_money/controllers/profile_controller.dart';
 import 'package:home_money/services/auth_service.dart';
+import 'package:home_money/services/profile_service.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'utils/constants.dart';
@@ -43,6 +45,13 @@ class HomeMoneyApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         Provider<AuthService>(create: (_) => AuthService()),
+        Provider<ProfileService>(create: (_) => ProfileService()),
+        ChangeNotifierProvider<ProfileController>(
+          create: (context) => ProfileController(
+            authService: context.read<AuthService>(),
+            profileService: context.read<ProfileService>(),
+          ),
+        ),
         ChangeNotifierProvider(
           create: (context) => AuthProvider(context.read<AuthService>()),
         ),

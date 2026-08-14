@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:home_money/views/more/change_password.dart';
+import 'package:home_money/views/more/edit_profile.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
@@ -51,8 +53,14 @@ class ProfileScreen extends StatelessWidget {
             Icons.person_outline,
             'Profile details',
             'Name, phone, currency and language',
-            onTap: () {
+            onTap: () async {
               // TODO: navigate to profile edit
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const EditProfileScreen(),
+                ),
+              );
             },
           ),
           _tile(
@@ -75,35 +83,35 @@ class ProfileScreen extends StatelessWidget {
               );
             },
           ),
-          Consumer<ThemeProvider>(
-            builder: (_, p, _) => ListTile(
-              leading: const Icon(Icons.brightness_auto_outlined),
-              title: const Text('Theme mode'),
-              trailing: DropdownButton<ThemeMode>(
-                value: p.themeMode,
-                underline: const SizedBox.shrink(),
-                onChanged: (mode) {
-                  if (mode != null) {
-                    p.setThemeMode(mode);
-                  }
-                },
-                items: const [
-                  DropdownMenuItem(
-                    value: ThemeMode.system,
-                    child: Text('System'),
-                  ),
-                  DropdownMenuItem(
-                    value: ThemeMode.light,
-                    child: Text('Light'),
-                  ),
-                  DropdownMenuItem(
-                    value: ThemeMode.dark,
-                    child: Text('Dark'),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          // Consumer<ThemeProvider>(
+          //   builder: (_, p, _) => ListTile(
+          //     leading: const Icon(Icons.brightness_auto_outlined),
+          //     title: const Text('Theme mode'),
+          //     trailing: DropdownButton<ThemeMode>(
+          //       value: p.themeMode,
+          //       underline: const SizedBox.shrink(),
+          //       onChanged: (mode) {
+          //         if (mode != null) {
+          //           p.setThemeMode(mode);
+          //         }
+          //       },
+          //       items: const [
+          //         DropdownMenuItem(
+          //           value: ThemeMode.system,
+          //           child: Text('System'),
+          //         ),
+          //         DropdownMenuItem(
+          //           value: ThemeMode.light,
+          //           child: Text('Light'),
+          //         ),
+          //         DropdownMenuItem(
+          //           value: ThemeMode.dark,
+          //           child: Text('Dark'),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           const Divider(),
           const Text('Account', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
@@ -113,20 +121,22 @@ class ProfileScreen extends StatelessWidget {
             'Change password',
             'Send a password reset email',
             onTap: () async {
-              if (user?.email != null) {
-                final ok = await auth.resetPassword(user!.email!);
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        ok
-                            ? 'Password reset email sent.'
-                            : (auth.error ?? 'Unable to send reset email'),
-                      ),
-                    ),
-                  );
-                }
-              }
+              showChangePasswordDialog(context);
+
+              // if (user?.email != null) {
+              //   final ok = await auth.resetPassword(user!.email!);
+              //   if (context.mounted) {
+              //     ScaffoldMessenger.of(context).showSnackBar(
+              //       SnackBar(
+              //         content: Text(
+              //           ok
+              //               ? 'Password reset email sent.'
+              //               : (auth.error ?? 'Unable to send reset email'),
+              //         ),
+              //       ),
+              //     );
+              //   }
+              // }
             },
           ),
           _tile(
