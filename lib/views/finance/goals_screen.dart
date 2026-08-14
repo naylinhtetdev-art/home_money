@@ -20,8 +20,9 @@ class _GoalsScreenState extends State<GoalsScreen> {
   @override
   void initState() {
     super.initState();
-    if (widget.addOnOpen)
+    if (widget.addOnOpen) {
       WidgetsBinding.instance.addPostFrameCallback((_) => _add());
+    }
   }
 
   @override

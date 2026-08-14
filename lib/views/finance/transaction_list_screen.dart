@@ -24,10 +24,26 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
     final rows = [
       ...f.incomes.map(
-        (v) => _Row(v.id, v.source, v.amount, v.date, true, v.paymentMethod, v.note),
+        (v) => _Row(
+          v.id,
+          v.source,
+          v.amount,
+          v.date,
+          true,
+          v.paymentMethod,
+          v.note,
+        ),
       ),
       ...f.expenses.map(
-        (v) => _Row(v.id, v.category, v.amount, v.date, false, v.paymentMethod, v.note),
+        (v) => _Row(
+          v.id,
+          v.category,
+          v.amount,
+          v.date,
+          false,
+          v.paymentMethod,
+          v.note,
+        ),
       ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 
@@ -62,7 +78,7 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(horizontal: 16),
                     itemCount: results.length,
-                    separatorBuilder: (_, __) => const Divider(),
+                    separatorBuilder: (_, _) => const Divider(),
                     itemBuilder: (_, i) {
                       final x = results[i];
                       final uid = context.read<AuthProvider>().user?.uid;
@@ -98,11 +114,18 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                         onDismissed: (_) async {
                           if (uid != null) {
                             final deleted = x.income
-                                ? await context.read<FinanceProvider>().deleteIncome(uid, x.id)
+                                ? await context
+                                      .read<FinanceProvider>()
+                                      .deleteIncome(uid, x.id)
                                 : await _deleteExpense(uid, x.id);
                             if (!deleted && mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text(f.incomeError ?? 'Unable to delete transaction')),
+                                SnackBar(
+                                  content: Text(
+                                    f.incomeError ??
+                                        'Unable to delete transaction',
+                                  ),
+                                ),
                               );
                             }
                           }
@@ -126,7 +149,9 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                                   tooltip: 'Edit income',
                                   icon: const Icon(Icons.edit_outlined),
                                   onPressed: () => _editIncome(
-                                    f.incomes.firstWhere((income) => income.id == x.id),
+                                    f.incomes.firstWhere(
+                                      (income) => income.id == x.id,
+                                    ),
                                   ),
                                 ),
                               Text(
@@ -161,7 +186,8 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (_) => AddTransactionScreen(income: true, incomeToEdit: income),
+        builder: (_) =>
+            AddTransactionScreen(income: true, incomeToEdit: income),
       ),
     );
   }

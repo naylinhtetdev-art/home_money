@@ -27,11 +27,16 @@ void main() async {
     await FirebaseMessaging.instance.requestPermission();
   } catch (_) {}
 
-  runApp(const HomeMoneyApp());
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadThemeMode();
+
+  runApp(HomeMoneyApp(themeProvider: themeProvider));
 }
 
 class HomeMoneyApp extends StatelessWidget {
-  const HomeMoneyApp({super.key});
+  const HomeMoneyApp({super.key, required this.themeProvider});
+
+  final ThemeProvider themeProvider;
 
   @override
   Widget build(BuildContext context) {
@@ -42,13 +47,13 @@ class HomeMoneyApp extends StatelessWidget {
           create: (context) => AuthProvider(context.read<AuthService>()),
         ),
         ChangeNotifierProvider(create: (_) => FinanceProvider()),
-        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider.value(value: themeProvider),
       ],
       child: Consumer<ThemeProvider>(
         builder: (context, themeProvider, _) => MaterialApp(
           title: AppStrings.appName,
           debugShowCheckedModeBanner: false,
-          themeMode: themeProvider.mode,
+          themeMode: themeProvider.themeMode,
           theme: _theme(Brightness.light),
           darkTheme: _theme(Brightness.dark),
           home: const SplashScreen(),

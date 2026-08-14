@@ -7,8 +7,11 @@ import '../../providers/auth_provider.dart';
 import '../../providers/finance_provider.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key, required this.income, this.incomeToEdit})
-      : assert(income || incomeToEdit == null);
+  const AddTransactionScreen({
+    super.key,
+    required this.income,
+    this.incomeToEdit,
+  }) : assert(income || incomeToEdit == null);
 
   final bool income;
   final IncomeModel? incomeToEdit;
@@ -132,12 +135,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
       if (!mounted) return;
       if (!saved) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(finance.incomeError ?? 'Unable to save income')),
+          SnackBar(
+            content: Text(finance.incomeError ?? 'Unable to save income'),
+          ),
         );
         return;
       }
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(previous == null ? 'Income saved' : 'Income updated')),
+        SnackBar(
+          content: Text(previous == null ? 'Income saved' : 'Income updated'),
+        ),
       );
       Navigator.of(context).pop();
       return;
@@ -155,19 +162,24 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Transaction saved')),
-    );
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Transaction saved')));
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final savingIncome = widget.income && context.watch<FinanceProvider>().incomeSaving;
+    final savingIncome =
+        widget.income && context.watch<FinanceProvider>().incomeSaving;
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          widget.incomeToEdit != null ? 'Edit Income' : widget.income ? 'Add Income' : 'Add Expense',
+          widget.incomeToEdit != null
+              ? 'Edit Income'
+              : widget.income
+              ? 'Add Income'
+              : 'Add Expense',
         ),
       ),
       body: Padding(
@@ -181,8 +193,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 keyboardType: TextInputType.numberWithOptions(decimal: true),
                 decoration: const InputDecoration(labelText: 'Amount'),
                 validator: (v) {
-                  if (v == null || v.trim().isEmpty)
+                  if (v == null || v.trim().isEmpty) {
                     return 'Amount is required';
+                  }
                   final n = double.tryParse(v.trim());
                   if (n == null) return 'Enter a valid number';
                   if (n <= 0) return 'Amount must be greater than 0';
@@ -191,7 +204,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _category,
+                initialValue: _category,
                 items: (widget.income ? _incomeCategories : _expenseCategories)
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),
@@ -204,7 +217,7 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
-                value: _method,
+                initialValue: _method,
                 items: _paymentMethods
                     .map((e) => DropdownMenuItem(value: e, child: Text(e)))
                     .toList(),

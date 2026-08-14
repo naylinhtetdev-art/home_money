@@ -67,13 +67,42 @@ class ProfileScreen extends StatelessWidget {
           Consumer<ThemeProvider>(
             builder: (_, p, __) {
               return SwitchListTile(
-                value: p.mode == ThemeMode.dark,
+                value: p.themeMode == ThemeMode.dark,
                 title: const Text('Dark mode'),
                 secondary: const Icon(Icons.dark_mode_outlined),
                 onChanged: (v) =>
-                    p.setMode(v ? ThemeMode.dark : ThemeMode.light),
+                    p.setThemeMode(v ? ThemeMode.dark : ThemeMode.light),
               );
             },
+          ),
+          Consumer<ThemeProvider>(
+            builder: (_, p, _) => ListTile(
+              leading: const Icon(Icons.brightness_auto_outlined),
+              title: const Text('Theme mode'),
+              trailing: DropdownButton<ThemeMode>(
+                value: p.themeMode,
+                underline: const SizedBox.shrink(),
+                onChanged: (mode) {
+                  if (mode != null) {
+                    p.setThemeMode(mode);
+                  }
+                },
+                items: const [
+                  DropdownMenuItem(
+                    value: ThemeMode.system,
+                    child: Text('System'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.light,
+                    child: Text('Light'),
+                  ),
+                  DropdownMenuItem(
+                    value: ThemeMode.dark,
+                    child: Text('Dark'),
+                  ),
+                ],
+              ),
+            ),
           ),
           const Divider(),
           const Text('Account', style: TextStyle(fontWeight: FontWeight.w600)),

@@ -100,9 +100,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       color: Colors.orange,
                       onTap: () => Navigator.push(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const BudgetScreen(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const BudgetScreen()),
                       ),
                     ),
                   ],
@@ -142,10 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   )
                 else
-                  ...activities
-                      .take(6)
-                      .map((a) => _TransactionTile(item: a))
-                      .toList(),
+                  ...activities.take(6).map((a) => _TransactionTile(item: a)),
               ]),
             ),
           ),
@@ -240,7 +235,7 @@ class _Quick extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 13),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.12),
+            color: color.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(16),
           ),
           child: Column(
@@ -270,10 +265,16 @@ class _MonthlyBudgetSummary extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Monthly budget summary', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Monthly budget summary',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
             const SizedBox(height: 12),
             ...finance.currentMonthBudgets.map((budget) {
-              final spent = finance.spentForCategory(budget.categoryName, month);
+              final spent = finance.spentForCategory(
+                budget.categoryName,
+                month,
+              );
               return Padding(
                 padding: const EdgeInsets.only(bottom: 10),
                 child: Column(
@@ -283,14 +284,19 @@ class _MonthlyBudgetSummary extends StatelessWidget {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(budget.categoryName),
-                        Text('${formatCurrency(spent)} / ${formatCurrency(budget.budgetAmount)}'),
+                        Text(
+                          '${formatCurrency(spent)} / ${formatCurrency(budget.budgetAmount)}',
+                        ),
                       ],
                     ),
                     const SizedBox(height: 5),
                     LinearProgressIndicator(
-                      value: (budget.budgetAmount == 0 ? 0 : spent / budget.budgetAmount)
-                          .clamp(0, 1)
-                          .toDouble(),
+                      value:
+                          (budget.budgetAmount == 0
+                                  ? 0
+                                  : spent / budget.budgetAmount)
+                              .clamp(0, 1)
+                              .toDouble(),
                       color: spent > budget.budgetAmount ? Colors.red : null,
                     ),
                   ],
@@ -311,7 +317,13 @@ class _MonthlyBudgetSummary extends StatelessWidget {
     padding: const EdgeInsets.only(top: 4),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [Text(label), Text(formatCurrency(amount), style: const TextStyle(fontWeight: FontWeight.bold))],
+      children: [
+        Text(label),
+        Text(
+          formatCurrency(amount),
+          style: const TextStyle(fontWeight: FontWeight.bold),
+        ),
+      ],
     ),
   );
 }
@@ -337,7 +349,7 @@ class _TransactionTile extends StatelessWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: CircleAvatar(
-        backgroundColor: color.withOpacity(0.14),
+        backgroundColor: color.withValues(alpha: 0.14),
         child: Icon(
           item.income ? Icons.arrow_downward : Icons.arrow_upward,
           color: color,
