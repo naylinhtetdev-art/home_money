@@ -7,9 +7,11 @@ import '../../providers/auth_provider.dart';
 import '../../providers/finance_provider.dart';
 
 class AddTransactionScreen extends StatefulWidget {
-  const AddTransactionScreen({super.key, required this.income});
+  const AddTransactionScreen({super.key, required this.income, this.incomeToEdit})
+      : assert(income || incomeToEdit == null);
 
   final bool income;
+  final IncomeModel? incomeToEdit;
 
   @override
   State<AddTransactionScreen> createState() => _AddTransactionScreenState();
@@ -64,6 +66,14 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     _category = widget.income
         ? _incomeCategories.first
         : _expenseCategories.first;
+    final income = widget.incomeToEdit;
+    if (income != null) {
+      _amountCtrl.text = income.amount.toString();
+      _noteCtrl.text = income.note;
+      _category = income.source;
+      _method = income.paymentMethod;
+      _date = income.date;
+    }
   }
 
   @override
@@ -105,16 +115,32 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     if (widget.income) {
+      final previous = widget.incomeToEdit;
       final item = IncomeModel(
-        id: '',
+        id: previous?.id ?? '',
         amount: amount,
-        type: _category,
+        source: _category,
         date: _date,
         note: _noteCtrl.text.trim(),
         paymentMethod: _method,
-        createdAt: DateTime.now(),
+        createdAt: previous?.createdAt ?? DateTime.now(),
+        updatedAt: previous?.updatedAt,
       );
-      await finance.addIncome(user.uid, item);
+      final saved = previous == null
+          ? await finance.addIncome(user.uid, item)
+          : await finance.updateIncome(user.uid, item);
+      if (!mounted) return;
+      if (!saved) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(finance.incomeError ?? 'Unable to save income')),
+        );
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(previous == null ? 'Income saved' : 'Income updated')),
+      );
+      Navigator.of(context).pop();
+      return;
     } else {
       final item = ExpenseModel(
         id: '',
@@ -129,16 +155,21 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
     }
 
     if (!mounted) return;
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Transaction saved')));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Transaction saved')),
+    );
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    final savingIncome = widget.income && context.watch<FinanceProvider>().incomeSaving;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.income ? 'Add Income' : 'Add Expense')),
+      appBar: AppBar(
+        title: Text(
+          widget.incomeToEdit != null ? 'Edit Income' : widget.income ? 'Add Income' : 'Add Expense',
+        ),
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
@@ -167,7 +198,9 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 onChanged: (v) {
                   if (v != null) setState(() => _category = v);
                 },
-                decoration: const InputDecoration(labelText: 'Category'),
+                decoration: InputDecoration(
+                  labelText: widget.income ? 'Source' : 'Category',
+                ),
               ),
               const SizedBox(height: 12),
               DropdownButtonFormField<String>(
@@ -199,7 +232,16 @@ class _AddTransactionScreenState extends State<AddTransactionScreen> {
                 decoration: const InputDecoration(labelText: 'Note'),
               ),
               const SizedBox(height: 20),
-              ElevatedButton(onPressed: _save, child: const Text('Save')),
+              ElevatedButton(
+                onPressed: savingIncome ? null : _save,
+                child: savingIncome
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const Text('Save'),
+              ),
             ],
           ),
         ),

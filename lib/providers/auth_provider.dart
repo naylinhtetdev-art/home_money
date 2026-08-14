@@ -5,21 +5,23 @@ import '../services/auth_service.dart';
 import '../services/firestore_service.dart';
 
 class AuthProvider extends ChangeNotifier {
-  AuthProvider() {
+  AuthProvider(this._auth) {
     _auth.authStateChanges().listen((user) {
       _user = user;
       _loading = false;
       notifyListeners();
     });
   }
-  final AuthService _auth = AuthService();
+
+  final AuthService _auth;
   final FirestoreService _store = FirestoreService();
   User? _user;
   bool _loading = true;
   String? error;
   User? get user => _user;
+  User? get currentUser => _auth.currentUser;
   bool get loading => _loading;
-  bool get signedIn => _user != null;
+  bool get signedIn => currentUser != null;
   Future<bool> login(String email, String password) =>
       _run(() => _auth.login(email.trim(), password));
   Future<bool> register(String name, String email, String password) =>

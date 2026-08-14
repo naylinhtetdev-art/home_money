@@ -5,6 +5,7 @@ import '../../providers/auth_provider.dart';
 import '../../providers/finance_provider.dart';
 import '../../utils/helpers.dart';
 import '../finance/add_transaction_screen.dart';
+import '../finance/budget_screen.dart';
 import '../finance/transaction_list_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -72,6 +73,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   income: finance.totalIncome,
                   expense: finance.totalExpense,
                 ),
+                if (finance.currentMonthBudgets.isNotEmpty) ...[
+                  const SizedBox(height: 18),
+                  _MonthlyBudgetSummary(finance: finance),
+                ],
                 const SizedBox(height: 18),
                 Row(
                   children: [
@@ -96,7 +101,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) => const TransactionListScreen(),
+                          builder: (_) => const BudgetScreen(),
                         ),
                       ),
                     ),
@@ -249,6 +254,66 @@ class _Quick extends StatelessWidget {
       ),
     );
   }
+}
+
+class _MonthlyBudgetSummary extends StatelessWidget {
+  const _MonthlyBudgetSummary({required this.finance});
+
+  final FinanceProvider finance;
+
+  @override
+  Widget build(BuildContext context) {
+    final month = DateTime(DateTime.now().year, DateTime.now().month);
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Monthly budget summary', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 12),
+            ...finance.currentMonthBudgets.map((budget) {
+              final spent = finance.spentForCategory(budget.categoryName, month);
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(budget.categoryName),
+                        Text('${formatCurrency(spent)} / ${formatCurrency(budget.budgetAmount)}'),
+                      ],
+                    ),
+                    const SizedBox(height: 5),
+                    LinearProgressIndicator(
+                      value: (budget.budgetAmount == 0 ? 0 : spent / budget.budgetAmount)
+                          .clamp(0, 1)
+                          .toDouble(),
+                      color: spent > budget.budgetAmount ? Colors.red : null,
+                    ),
+                  ],
+                ),
+              );
+            }),
+            const Divider(),
+            _totalRow('Total budget', finance.currentMonthTotalBudget),
+            _totalRow('Total spent', finance.currentMonthTotalSpent),
+            _totalRow('Total remaining', finance.currentMonthRemaining),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _totalRow(String label, double amount) => Padding(
+    padding: const EdgeInsets.only(top: 4),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [Text(label), Text(formatCurrency(amount), style: const TextStyle(fontWeight: FontWeight.bold))],
+    ),
+  );
 }
 
 class _Activity {

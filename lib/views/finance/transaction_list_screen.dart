@@ -5,6 +5,8 @@ import '../../providers/auth_provider.dart';
 import '../../providers/finance_provider.dart';
 import '../../utils/helpers.dart';
 import '../../widgets/empty_state.dart';
+import '../../models/income_model.dart';
+import 'add_transaction_screen.dart';
 
 class TransactionListScreen extends StatefulWidget {
   const TransactionListScreen({super.key});
@@ -22,10 +24,10 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
 
     final rows = [
       ...f.incomes.map(
-        (v) => _Row(v.id, v.type, v.amount, v.date, true, v.paymentMethod),
+        (v) => _Row(v.id, v.source, v.amount, v.date, true, v.paymentMethod, v.note),
       ),
       ...f.expenses.map(
-        (v) => _Row(v.id, v.category, v.amount, v.date, false, v.paymentMethod),
+        (v) => _Row(v.id, v.category, v.amount, v.date, false, v.paymentMethod, v.note),
       ),
     ]..sort((a, b) => b.date.compareTo(a.date));
 
@@ -93,13 +95,16 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             ],
                           ),
                         ),
-                        onDismissed: (_) {
+                        onDismissed: (_) async {
                           if (uid != null) {
-                            context.read<FinanceProvider>().delete(
-                              uid,
-                              x.income ? 'incomes' : 'expenses',
-                              x.id,
-                            );
+                            final deleted = x.income
+                                ? await context.read<FinanceProvider>().deleteIncome(uid, x.id)
+                                : await _deleteExpense(uid, x.id);
+                            if (!deleted && mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text(f.incomeError ?? 'Unable to delete transaction')),
+                              );
+                            }
                           }
                         },
                         child: ListTile(
@@ -108,13 +113,30 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                             color: x.income ? Colors.green : Colors.red,
                           ),
                           title: Text(x.title),
-                          subtitle: Text('${formatDate(x.date)} · ${x.method}'),
-                          trailing: Text(
-                            '${x.income ? '+' : '-'}${formatCurrency(x.amount)}',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: x.income ? Colors.green : Colors.red,
-                            ),
+                          subtitle: Text(
+                            x.note.isEmpty
+                                ? '${formatDate(x.date)} · ${x.method}'
+                                : '${formatDate(x.date)} · ${x.method}\n${x.note}',
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (x.income)
+                                IconButton(
+                                  tooltip: 'Edit income',
+                                  icon: const Icon(Icons.edit_outlined),
+                                  onPressed: () => _editIncome(
+                                    f.incomes.firstWhere((income) => income.id == x.id),
+                                  ),
+                                ),
+                              Text(
+                                '${x.income ? '+' : '-'}${formatCurrency(x.amount)}',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: x.income ? Colors.green : Colors.red,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       );
@@ -122,6 +144,24 @@ class _TransactionListScreenState extends State<TransactionListScreen> {
                   ),
           ),
         ],
+      ),
+    );
+  }
+
+  Future<bool> _deleteExpense(String uid, String itemId) async {
+    try {
+      await context.read<FinanceProvider>().delete(uid, 'expenses', itemId);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  void _editIncome(IncomeModel income) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => AddTransactionScreen(income: true, incomeToEdit: income),
       ),
     );
   }
@@ -135,6 +175,7 @@ class _Row {
     this.date,
     this.income,
     this.method,
+    this.note,
   );
 
   final String id;
@@ -143,4 +184,5 @@ class _Row {
   final double amount;
   final DateTime date;
   final bool income;
+  final String note;
 }
