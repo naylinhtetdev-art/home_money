@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:home_money/views/more/about_screen.dart';
 import 'package:home_money/views/more/change_password.dart';
 import 'package:home_money/views/more/edit_profile.dart';
+import 'package:home_money/views/more/notifications_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
+import '../../providers/notification_provider.dart';
+import '../../services/notification_service.dart';
 import '../../providers/theme_provider.dart';
 import '../auth/login_screen.dart';
 
@@ -69,7 +73,12 @@ class ProfileScreen extends StatelessWidget {
             'Notifications',
             'Daily reminders and budget alerts',
             onTap: () {
-              // TODO: navigate to notification settings
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const NotificationsScreen(),
+                ),
+              ); // TODO: navigate to notification settings
             },
           ),
           Consumer<ThemeProvider>(
@@ -146,12 +155,26 @@ class ProfileScreen extends StatelessWidget {
             'Personal and household finance manager',
             onTap: () {
               // TODO: show about dialog
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const AboutScreen()),
+              );
             },
           ),
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Log out', style: TextStyle(color: Colors.red)),
             onTap: () async {
+              final uid = auth.user?.uid;
+              if (uid != null) {
+                try {
+                  await NotificationService.instance.removeToken(uid);
+                } catch (_) {}
+                try {
+                  context.read<NotificationProvider>().stop();
+                } catch (_) {}
+              }
+
               await auth.logout();
               if (context.mounted) {
                 Navigator.of(context).pushAndRemoveUntil(

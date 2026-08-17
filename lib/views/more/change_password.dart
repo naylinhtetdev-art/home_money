@@ -56,7 +56,7 @@ void showChangePasswordDialog(BuildContext context) {
                       (dialogContext as Element).markNeedsBuild();
                     },
                   ),
-                  border: const UnderlineInputBorder(),
+                  //border: const UnderlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {
@@ -112,7 +112,7 @@ void showChangePasswordDialog(BuildContext context) {
                       (dialogContext as Element).markNeedsBuild();
                     },
                   ),
-                  border: const UnderlineInputBorder(),
+                  // border: const UnderlineInputBorder(),
                 ),
                 validator: (value) {
                   if (value == null || value.isEmpty) {

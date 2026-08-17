@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../providers/auth_provider.dart';
 import '../shell/home_shell.dart';
@@ -17,6 +18,27 @@ class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController _emailCtrl = TextEditingController();
   final TextEditingController _passwordCtrl = TextEditingController();
   bool _obscure = true;
+  bool _remember = false;
+  // Using SharedPreferences for storing non-sensitive saved credentials
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedCredentials();
+  }
+
+  Future<void> _loadSavedCredentials() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final email = prefs.getString('saved_email');
+      final pass = prefs.getString('saved_password');
+      if (email != null && pass != null) {
+        _emailCtrl.text = email;
+        _passwordCtrl.text = pass;
+        setState(() => _remember = true);
+      }
+    } catch (_) {}
+  }
 
   @override
   void dispose() {
@@ -34,6 +56,17 @@ class _LoginScreenState extends State<LoginScreen> {
     );
     if (!mounted) return;
     if (success) {
+      // Save or remove credentials based on Remember Me
+      try {
+        final prefs = await SharedPreferences.getInstance();
+        if (_remember) {
+          await prefs.setString('saved_email', _emailCtrl.text.trim());
+          await prefs.setString('saved_password', _passwordCtrl.text);
+        } else {
+          await prefs.remove('saved_email');
+          await prefs.remove('saved_password');
+        }
+      } catch (_) {}
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomeShell()),
         (_) => false,
@@ -118,6 +151,13 @@ class _LoginScreenState extends State<LoginScreen> {
                       onPressed: _forgot,
                       child: const Text('Forgot password?'),
                     ),
+                  ),
+                  CheckboxListTile(
+                    contentPadding: EdgeInsets.zero,
+                    value: _remember,
+                    onChanged: (v) => setState(() => _remember = v ?? false),
+                    title: const Text('Remember me'),
+                    controlAffinity: ListTileControlAffinity.leading,
                   ),
                   if (auth.error != null)
                     Text(
