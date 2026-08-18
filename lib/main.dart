@@ -51,7 +51,7 @@ class HomeMoneyApp extends StatelessWidget {
   const HomeMoneyApp({super.key, required this.themeProvider});
 
   final ThemeProvider themeProvider;
-
+  //final themeProvider = ThemeProvider();
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
