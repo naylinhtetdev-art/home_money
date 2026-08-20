@@ -62,6 +62,6 @@ class DefaultFirebaseOptions {
     messagingSenderId: '518858490478',
     projectId: 'home-money-343bb',
     storageBucket: 'home-money-343bb.firebasestorage.app',
-    iosBundleId: 'com.example.homeMoney',
+    iosBundleId: 'com.naylinhtet.home_money',
   );
 }
